@@ -4,19 +4,27 @@ import "leaflet/dist/leaflet.css";
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout>
-  <main class="p-4">
-    <h1 class="text-2xl">Établissements (Leaflet)</h1>
-    <p><a class="underline" href="/">Accueil</a></p>
-    <div
-      id="map"
-      role="region"
-      aria-label="Carte des établissements"
-      style="height: 600px;"
-      class="my-4"
-    >
+<Layout title="Établissements – Leaflet">
+  <div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+      <h1 class="card-title text-2xl">Établissements (Leaflet)</h1>
+      <p class="text-base-content/70">
+        Établissements d'enseignement supérieur et de recherche. Cliquez sur un
+        marqueur pour voir son nom.
+      </p>
+      <div id="chargement" class="flex items-center gap-2" role="status">
+        <span class="loading loading-spinner loading-sm"></span>
+        Chargement de la carte…
+      </div>
+      <div
+        id="map"
+        role="region"
+        aria-label="Carte des établissements"
+        class="z-0 h-[600px] rounded-box"
+      >
+      </div>
     </div>
-  </main>
+  </div>
 </Layout>
 
 <script>
@@ -40,4 +48,5 @@ import Layout from "../layouts/Layout.astro";
       .addTo(map)
       .bindPopup(e.name);
   }
+  document.getElementById("chargement")?.remove();
 </script>

@@ -9,38 +9,44 @@ const listePeriode = [
 const listeSexe = [...new Set(populationMain.map((d) => d["Sexe"]))];
 const listeAge = [...new Set(populationMain.map((d) => d["Âge"].trim()))];
 
-const selectClass = "border rounded px-2 py-1";
+const selectClass = "select w-full";
 ---
 
-<Layout>
-  <main class="p-4">
-    <h1 class="text-2xl">Population par département (GeoJSON + Plot)</h1>
-    <p><a class="underline" href="/">Accueil</a></p>
+<Layout title="Population – GeoJSON / Plot">
+  <div class="card bg-base-100 shadow-sm">
+    <div class="card-body">
+      <h1 class="card-title text-2xl">
+        Population par département (GeoJSON + Plot)
+      </h1>
 
-    <form class="my-4 flex flex-wrap gap-4" aria-label="Filtres de la carte">
-      <label class="flex flex-col">
-        Période
-        <select id="periode" class={selectClass}>
-          {listePeriode.map((p, i) => <option selected={i === 0}>{p}</option>)}
-        </select>
-      </label>
-      <label class="flex flex-col">
-        Sexe
-        <select id="sexe" class={selectClass}>
-          {listeSexe.map((s) => <option selected={s === "Total"}>{s}</option>)}
-        </select>
-      </label>
-      <label class="flex flex-col">
-        Âge
-        <select id="age" class={selectClass}>
-          {listeAge.map((a) => <option selected={a === "Total"}>{a}</option>)}
-        </select>
-      </label>
-    </form>
+      <form
+        class="grid grid-cols-1 gap-4 sm:grid-cols-3"
+        aria-label="Filtres de la carte"
+      >
+        <label class="flex flex-col gap-1">
+          <span class="text-sm font-medium">Période</span>
+          <select id="periode" class={selectClass}>
+            {listePeriode.map((p, i) => <option selected={i === 0}>{p}</option>)}
+          </select>
+        </label>
+        <label class="flex flex-col gap-1">
+          <span class="text-sm font-medium">Sexe</span>
+          <select id="sexe" class={selectClass}>
+            {listeSexe.map((s) => <option selected={s === "Total"}>{s}</option>)}
+          </select>
+        </label>
+        <label class="flex flex-col gap-1">
+          <span class="text-sm font-medium">Âge</span>
+          <select id="age" class={selectClass}>
+            {listeAge.map((a) => <option selected={a === "Total"}>{a}</option>)}
+          </select>
+        </label>
+      </form>
 
-    <!-- aria-live : le lecteur d'écran est prévenu quand la carte change -->
-    <div id="carte" aria-live="polite"></div>
-  </main>
+      <!-- aria-live : le lecteur d'écran est prévenu quand la carte change -->
+      <div id="carte" aria-live="polite" class="overflow-x-auto"></div>
+    </div>
+  </div>
 </Layout>
 
 <script>
