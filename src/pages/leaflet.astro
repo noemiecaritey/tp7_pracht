@@ -34,13 +34,10 @@ import Layout from "../layouts/Layout.astro";
   }).addTo(map);
 
   // Champs du JSON : name, lat, lon
-  const bounds: L.LatLngTuple[] = [];
   for (const e of listeEtablissements as { name: string; lat: number; lon: number }[]) {
     if (!Number.isFinite(e.lat) || !Number.isFinite(e.lon)) continue;
     L.marker([e.lat, e.lon], { title: e.name, alt: e.name })
       .addTo(map)
       .bindPopup(e.name);
-    bounds.push([e.lat, e.lon]);
   }
-  if (bounds.length) map.fitBounds(bounds, { padding: [20, 20] });
 </script>
