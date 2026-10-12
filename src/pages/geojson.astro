@@ -1,0 +1,112 @@
+---
+import Layout from "../layouts/Layout.astro";
+import populationMain from "../assets/populationMain.json";
+
+// Listes pour les SELECT, construites côté serveur
+const listePeriode = [
+  ...new Set(populationMain.map((d) => d["Période"])),
+].sort((a, b) => b - a); // la plus récente d'abord
+const listeSexe = [...new Set(populationMain.map((d) => d["Sexe"]))];
+const listeAge = [...new Set(populationMain.map((d) => d["Âge"].trim()))];
+
+const selectClass = "border rounded px-2 py-1";
+---
+
+<Layout>
+  <main class="p-4">
+    <h1 class="text-2xl">Population par département (GeoJSON + Plot)</h1>
+    <p><a class="underline" href="/">Accueil</a></p>
+
+    <form class="my-4 flex flex-wrap gap-4" aria-label="Filtres de la carte">
+      <label class="flex flex-col">
+        Période
+        <select id="periode" class={selectClass}>
+          {listePeriode.map((p, i) => <option selected={i === 0}>{p}</option>)}
+        </select>
+      </label>
+      <label class="flex flex-col">
+        Sexe
+        <select id="sexe" class={selectClass}>
+          {listeSexe.map((s) => <option selected={s === "Total"}>{s}</option>)}
+        </select>
+      </label>
+      <label class="flex flex-col">
+        Âge
+        <select id="age" class={selectClass}>
+          {listeAge.map((a) => <option selected={a === "Total"}>{a}</option>)}
+        </select>
+      </label>
+    </form>
+
+    <!-- aria-live : le lecteur d'écran est prévenu quand la carte change -->
+    <div id="carte" aria-live="polite"></div>
+  </main>
+</Layout>
+
+<script>
+  // Exécuté côté client
+  import * as Plot from "@observablehq/plot";
+  import populationMain from "../assets/populationMain.json";
+  import departements from "../assets/departements.geojson.json";
+
+  const elmYear = document.getElementById("periode") as HTMLSelectElement;
+  const elmSex = document.getElementById("sexe") as HTMLSelectElement;
+  const elmAge = document.getElementById("age") as HTMLSelectElement;
+  const elmCarte = document.getElementById("carte") as HTMLElement;
+
+  function draw() {
+    const selectedYear = Number(elmYear.value);
+    const selectedSex = elmSex.value;
+    const selectedAge = elmAge.value;
+
+    // nom du département -> valeur pour la sélection courante
+    const valeurParDept = new Map<string, number>(
+      populationMain
+        .filter(
+          (d) =>
+            d["Période"] === selectedYear &&
+            d["Sexe"] === selectedSex &&
+            d["Âge"].trim() === selectedAge,
+        )
+        .map((d) => [d["Géographie"], d["Valeur"]]),
+    );
+
+    const valeur = (f: any) => valeurParDept.get(f.properties.nom);
+    const titre = `Population ${selectedYear} – ${selectedSex}, ${selectedAge}`;
+
+    const figure = Plot.plot({
+      title: titre,
+      subtitle: "Nombre de personnes par département (France métropolitaine)",
+      caption: "Source : recensement de la population (INSEE).",
+      ariaLabel: `Carte choroplèthe : ${titre}. Plus la couleur est foncée, plus la population est élevée.`,
+      projection: {
+        type: "conic-conformal",
+        rotate: [-3, -46.2],
+        domain: departements as any,
+      },
+      color: {
+        type: "quantile",
+        n: 7,
+        scheme: "blues",
+        legend: true,
+        label: "Population",
+        unknown: "#ccc",
+      },
+      marks: [
+        Plot.geo(departements as any, {
+          fill: valeur,
+          stroke: "white",
+          strokeWidth: 0.5,
+          title: (f: any) =>
+            `${f.properties.nom} : ${valeur(f)?.toLocaleString("fr-FR") ?? "n/a"}`,
+          tip: true,
+        }),
+      ],
+    });
+
+    elmCarte.replaceChildren(figure);
+  }
+
+  for (const el of [elmYear, elmSex, elmAge]) el.addEventListener("change", draw);
+  draw();
+</script>
